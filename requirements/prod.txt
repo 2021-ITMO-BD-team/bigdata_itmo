@@ -1,0 +1,2 @@
+opencv-python-headless==4.5.1.48
+pafy==0.5.5

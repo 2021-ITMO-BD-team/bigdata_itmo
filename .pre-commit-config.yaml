@@ -1,0 +1,53 @@
+repos:
+    # general hooks to verify or beautify code
+    - repo: git://github.com/pre-commit/pre-commit-hooks
+      rev: v2.5.0
+      hooks:
+      - id: check-added-large-files
+        args: [--maxkb=100000]
+      - id: trailing-whitespace
+      - id: check-docstring-first
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-xml
+      - id: check-yaml
+      - id: detect-aws-credentials
+        args: [
+          --allow-missing-credentials,
+          --credentials-file, docker-compose/.env,
+        ]
+      - id: detect-private-key
+      - id: mixed-line-ending
+      - id: pretty-format-json
+        args: [--autofix]
+
+    # autoformat code with black formatter
+    - repo: https://github.com/psf/black
+      rev: 19.10b0
+      hooks:
+        - id: black
+          files: (^bigdata_itmo)
+          args: [-l 120]
+
+    # write a list of third-party modules to .isort.cfg
+    - repo: https://github.com/asottile/seed-isort-config
+      rev: v1.9.4
+      hooks:
+        - id: seed-isort-config
+          files: (^bigdata_itmo)
+          args: [--settings-path, bigdata_itmo]
+
+    # check code style
+    - repo: https://gitlab.com/pycqa/flake8
+      rev: 3.7.9
+      hooks:
+        - id: flake8
+          additional_dependencies: [flake8-quotes==3.0.0]
+          files: (^bigdata_itmo)
+          args: [--config, bigdata_itmo/.flake8]
+
+    - repo: https://github.com/pre-commit/mirrors-isort
+      rev: v5.4.2
+      hooks:
+        - id: isort
+          files: (^bigdata_itmo)
