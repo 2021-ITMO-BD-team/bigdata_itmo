@@ -2,6 +2,8 @@ import argparse
 import datetime
 import os
 import os.path as osp
+from pprint import pprint
+from urllib.error import URLError
 
 import requests
 import tqdm
@@ -19,6 +21,11 @@ def create_parser():
         help="Channel ID from YouTube [default = BBC News channel ID]",
     )
     parser.add_argument(
+        "--last_date",
+        default=None,
+        help="Earliest date before which data should be downloaded in YYYY-MM-DDTHH:MM:SSZ format",
+    )
+    parser.add_argument(
         "--output_folder",
         default=osp.join(system_config.data_dir, "raw", "pytube_data"),
         help="Filename to write stream",
@@ -28,32 +35,42 @@ def create_parser():
     return args
 
 
-def download_video_pack(args, video_list):
+def download_video_pack(args, video_list, exist_list):
     for video_item in tqdm.tqdm(video_list["items"], desc="Download items"):
 
         item_kind = video_item["id"]["kind"]
-        exist_list = [osp.splitext(fname)[0] for fname in sorted(os.listdir(args.output_folder))]
 
         if item_kind == "youtube#video":
 
             video_id = video_item["id"]["videoId"]
+
             # TODO: save this information along with video content
 
             video_name = video_item["snippet"]["title"]
             published_at = video_item["snippet"]["publishedAt"]
+            # thumbnail_url = video_item["snippet"]["thumbnails"]["high"]
 
             if video_name in exist_list:
                 continue
-            # thumbnail_url = video_item["snippet"]["thumbnails"]["high"]
 
-            yt = YouTube(f"'http://youtube.com/watch?v={video_id}'")
-            video = yt.streams.filter(file_extension="mp4").first()
-            video.download(output_path=args.output_folder)
+            yt = YouTube(f"http://youtube.com/watch?v={video_id}")
+
+            try:
+                video = yt.streams.filter(file_extension="mp4").first()
+                video.download(output_path=args.output_folder)
+            except URLError:
+                print(
+                    f"Video {video_name}, time {published_at}, url "
+                    + f"http://youtube.com/watch?v={video_id} was not downloaded due to unknown service error"
+                )
+                continue
 
     return published_at
 
 
-def download_after(args, last_date=None):
+def download_after(args):
+
+    last_date = args.last_date
 
     while True:
 
@@ -65,10 +82,17 @@ def download_after(args, last_date=None):
             + f"&channelId={args.channel_id}&publishedBefore={last_date}&part=snippet,id&order=date&maxResults=20"
         ).json()
 
-        if len(video_list["items"]) == 0:
+        if "items" not in video_list.keys():
+            print(last_date)
+            pprint(video_list)
             break
 
-        last_date = download_video_pack(args, video_list)
+        if len(video_list["items"]) == 0:
+            print(last_date)
+            break
+
+        exist_list = set([osp.splitext(fname)[0] for fname in sorted(os.listdir(args.output_folder))])
+        last_date = download_video_pack(args, video_list, exist_list)
 
 
 def main(args):
