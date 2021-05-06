@@ -9,6 +9,7 @@ from urllib.error import URLError
 import requests
 import tqdm
 from pytube import YouTube
+from pytube.helpers import safe_filename
 
 from bigdata_itmo.config import download_config, system_config
 
@@ -60,7 +61,7 @@ def download_video_pack(args, video_list, exist_list):
                 )
                 try:
                     if response.status_code == 200:
-                        with open(osp.join(args.json_folder, f"{video_name}.json"), "w") as fout:
+                        with open(osp.join(args.json_folder, f"{safe_filename(video_name)}.json"), "w") as fout:
                             json.dump(response.json(), fout)
                     else:
                         print(response.json())

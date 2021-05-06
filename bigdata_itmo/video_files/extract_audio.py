@@ -23,17 +23,19 @@ def create_parser():
         help="Folder to store audio files",
     )
     parser.add_argument("--audio_format", default="wav", help="Format of output audio file")
+    parser.add_argument("--rewrite", action="store_true", help="Whether to rewrite existing audio tracks")
 
     args = parser.parse_args()
     return args
 
 
-def extract_one_file(fpath, output_folder, format="wav"):
+def extract_one_file(fpath, output_folder, format="wav", rewrite=False):
     os.makedirs(output_folder, exist_ok=True)
 
-    my_clip = mp.VideoFileClip(fpath)
     out_fpath = osp.join(output_folder, f"{osp.splitext(osp.basename(fpath))[0]}.{format}")
-    my_clip.audio.write_audiofile(out_fpath)
+    if not osp.exists(out_fpath) or rewrite:
+        my_clip = mp.VideoFileClip(fpath)
+        my_clip.audio.write_audiofile(out_fpath)
 
 
 if __name__ == "__main__":
@@ -45,4 +47,4 @@ if __name__ == "__main__":
     else:
         file_list = glob.glob(osp.join(args.input_path, "*"))
         for fpath in tqdm.tqdm(file_list, desc="Extracting audios"):
-            extract_one_file(fpath, args.output_folder)
+            extract_one_file(fpath, args.output_folder, format=args.audio_format, rewrite=args.rewrite)
