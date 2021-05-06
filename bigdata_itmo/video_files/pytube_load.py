@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import json
 import os
 import os.path as osp
 from pprint import pprint
@@ -27,9 +28,15 @@ def create_parser():
     )
     parser.add_argument(
         "--output_folder",
-        default=osp.join(system_config.data_dir, "raw", "pytube_data"),
-        help="Filename to write stream",
+        default=osp.join(system_config.data_dir, "raw", "pytube_data", "BBC_News"),
+        help="Folder to save data",
     )
+    parser.add_argument(
+        "--json_folder",
+        default=osp.join(system_config.data_dir, "raw", "json", "BBC_News"),
+        help="Folder to save json files",
+    )
+    parser.add_argument("--update_meta", action="store_true", help="Whether to update json files with meta information")
 
     args = parser.parse_args()
     return args
@@ -44,11 +51,23 @@ def download_video_pack(args, video_list, exist_list):
 
             video_id = video_item["id"]["videoId"]
 
-            # TODO: save this information along with video content
-
             video_name = video_item["snippet"]["title"]
             published_at = video_item["snippet"]["publishedAt"]
-            # thumbnail_url = video_item["snippet"]["thumbnails"]["high"]
+
+            if args.update_meta:
+                response = requests.get(
+                    f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2Cid&id={video_id}&key={download_config.api_key}"
+                )
+                try:
+                    if response.status_code == 200:
+                        with open(osp.join(args.json_folder, f"{video_name}.json"), "w") as fout:
+                            json.dump(response.json(), fout)
+                    else:
+                        print(response.json())
+                        print(published_at)
+                        break
+                except FileNotFoundError:
+                    print(f"Meta for video {video_name} was not saved due to unknown service error")
 
             if video_name in exist_list:
                 continue
@@ -71,6 +90,8 @@ def download_video_pack(args, video_list, exist_list):
 def download_after(args):
 
     last_date = args.last_date
+    os.makedirs(args.output_folder, exist_ok=True)
+    os.makedirs(args.json_folder, exist_ok=True)
 
     while True:
 
@@ -79,13 +100,15 @@ def download_after(args):
 
         video_list = requests.get(
             f"https://www.googleapis.com/youtube/v3/search?key={download_config.api_key}"
-            + f"&channelId={args.channel_id}&publishedBefore={last_date}&part=snippet,id&order=date&maxResults=20"
+            + f"&channelId={args.channel_id}&publishedBefore={last_date}&part=snippet,id&order=date&maxResults=50"
         ).json()
 
         if "items" not in video_list.keys():
             print(last_date)
             pprint(video_list)
             break
+
+        video_list["items"] = list(filter(lambda x: x["id"]["kind"] == "youtube#video", video_list["items"]))
 
         if len(video_list["items"]) == 0:
             print(last_date)
