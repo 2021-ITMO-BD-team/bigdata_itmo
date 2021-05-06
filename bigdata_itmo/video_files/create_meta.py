@@ -3,6 +3,7 @@ import glob
 import json
 import os
 import os.path as osp
+import re
 
 import pandas as pd
 import tqdm
@@ -44,19 +45,36 @@ def read_one_json(json_path):
     video_item = raw_dict["items"][0]
     out_dict = {
         "id": video_item["id"],
+        "publishedAt": video_item["snippet"]["publishedAt"],
+        "categoryId": video_item["snippet"]["categoryId"],
         "title": video_item["snippet"]["title"],
         "description": video_item["snippet"]["description"],
-        "publishedAt": video_item["snippet"]["publishedAt"],
         "channelId": video_item["snippet"]["channelId"],
         "channelTitle": video_item["snippet"]["channelTitle"],
         "tags": video_item["snippet"].get("tags", []),
-        "categoryId": video_item["snippet"]["categoryId"],
     }
 
     return out_dict
 
 
+def clean_description(
+    in_str, pat=re.compile("((https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)")
+):  # noqa W605
+    # Regex from https://macxima.medium.com/python-extracting-urls-from-strings-21dc82e2142b
+
+    lines = list(in_str.split("\n"))
+
+    # Delete strings containing link
+    lines = list(filter(lambda x: not ((re.search(pat, x) is not None) and (len(x) < 100)), lines))
+    lines = list(filter(lambda x: "youtube" not in x, lines))
+
+    return "\n".join(lines).strip()
+
+
 def update_one_json(prep_json, video_dir, audio_dir):
+    prep_json["title_clean"] = safe_filename(prep_json["title"])
+    prep_json["description_clean"] = clean_description(prep_json["description"])
+
     video_path = osp.join(video_dir, f"{safe_filename(prep_json['title'])}.mp4")
     audio_path = osp.join(audio_dir, f"{safe_filename(prep_json['title'])}.wav")
 
