@@ -19,7 +19,7 @@ def create_parser():
     )
     parser.add_argument(
         "--output_folder",
-        default=osp.join(system_config.data_dir, "raw", "audio_data", "BBC_News"),
+        default=osp.join(system_config.data_dir, "raw", "mp3_data", "BBC_News"),
         help="Folder to store audio files",
     )
     parser.add_argument("--audio_format", default="wav", help="Format of output audio file")

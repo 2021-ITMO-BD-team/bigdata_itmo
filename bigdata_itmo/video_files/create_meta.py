@@ -14,27 +14,14 @@ from bigdata_itmo.config import system_config
 
 def create_parser():
     parser = argparse.ArgumentParser(("Gather meta information from raw json files"))
-    parser.add_argument(
-        "--json_dir",
-        default=osp.join(system_config.data_dir, "raw", "json", "BBC_News"),
-        help="Path to folder with json files",
-    )
-    parser.add_argument(
-        "--video_dir",
-        default=osp.join(system_config.data_dir, "raw", "pytube_data", "BBC_News"),
-        help="Path to folder with videos",
-    )
-    parser.add_argument(
-        "--audio_dir",
-        default=osp.join(system_config.data_dir, "raw", "audio_data", "BBC_News"),
-        help="Path to folder with audios",
-    )
-    parser.add_argument(
-        "--out_dir",
-        default=osp.join(system_config.data_dir, "processed", "BBC_News"),
-        help="Path to folder to save meta data",
-    )
+    parser.add_argument("--dataset", default="BBC_News", help="Name of the dataset")
+
     args = parser.parse_args()
+    args.json_dir = osp.join(system_config.data_dir, "raw", "json", args.dataset)
+    args.video_dir = osp.join(system_config.data_dir, "raw", "pytube_data", args.dataset)
+    args.audio_dir = osp.join(system_config.data_dir, "raw", "mp3_data", args.dataset)
+    args.out_dir = osp.join(system_config.data_dir, "processed", args.dataset)
+
     return args
 
 
@@ -52,6 +39,7 @@ def read_one_json(json_path):
         "channelId": video_item["snippet"]["channelId"],
         "channelTitle": video_item["snippet"]["channelTitle"],
         "tags": video_item["snippet"].get("tags", []),
+        "query": raw_dict.get("query"),
     }
 
     return out_dict
@@ -76,10 +64,20 @@ def update_one_json(prep_json, video_dir, audio_dir):
     prep_json["description_clean"] = clean_description(prep_json["description"])
 
     video_path = osp.join(video_dir, f"{safe_filename(prep_json['title'])}.mp4")
-    audio_path = osp.join(audio_dir, f"{safe_filename(prep_json['title'])}.wav")
+    audio_path = osp.join(audio_dir, f"{safe_filename(prep_json['title'])}.mp3")
+    try:
+        prep_json["theme"] = CHANNEL_TITLE_2_THEME[prep_json["channelTitle"]]
+    except KeyError:
+        try:
+            prep_json["theme"] = QUERY_2_THEME[prep_json["query"]]
+        except KeyError:
+            print(
+                f"Theme cannot be extracted from channel title {prep_json['channelTitle']} "
+                f"or query {prep_json.get('query')}"
+            )
 
     for fpath, fpath_name in zip([video_path, audio_path], ["video_path", "audio_path"]):
-        prep_json[fpath_name] = fpath[len(system_config.data_dir) + 1 :]
+        prep_json[fpath_name] = "/".join(list(fpath.split("/"))[-3:])
         prep_json[f"{fpath_name}_exists"] = osp.exists(fpath)
         if not osp.exists(fpath):
             print(f"Path {fpath} doesn't exist")
@@ -98,6 +96,15 @@ def gather_meta(args):
 
     df = pd.DataFrame(data)
     return df
+
+
+CHANNEL_TITLE_2_THEME = {
+    "Bloomberg Politics": "politics",
+    "Bloomberg Technology": "technology",
+    "NBC Sports": "sports",
+    "Crime News": "violence",
+}
+QUERY_2_THEME = {"tv commercials english": "commercials", "tv advertisement": "commercials"}
 
 
 if __name__ == "__main__":

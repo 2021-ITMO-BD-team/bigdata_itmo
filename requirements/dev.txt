@@ -1,3 +1,9 @@
 pytube==10.7.2
 ffmpeg==1.4
 moviepy==1.0.3
+umap-learn==0.5.1
+datashader==0.12.1
+bokeh==2.3.1
+holoviews==1.14.3
+colorcet==2.0.6
+scikit_image==0.17.2
