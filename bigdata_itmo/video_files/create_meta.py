@@ -103,6 +103,7 @@ CHANNEL_TITLE_2_THEME = {
     "Bloomberg Technology": "technology",
     "NBC Sports": "sports",
     "Crime News": "violence",
+    "Met Office - Weather": "weather",
 }
 QUERY_2_THEME = {"tv commercials english": "commercials", "tv advertisement": "commercials"}
 

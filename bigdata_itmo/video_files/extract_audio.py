@@ -22,7 +22,7 @@ def create_parser():
         default=osp.join(system_config.data_dir, "raw", "mp3_data", "BBC_News"),
         help="Folder to store audio files",
     )
-    parser.add_argument("--audio_format", default="wav", help="Format of output audio file")
+    parser.add_argument("--audio_format", default="mp3", help="Format of output audio file (wav, mp3)")
     parser.add_argument("--rewrite", action="store_true", help="Whether to rewrite existing audio tracks")
 
     args = parser.parse_args()
