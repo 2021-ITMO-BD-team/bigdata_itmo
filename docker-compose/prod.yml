@@ -1,0 +1,95 @@
+version: '2.4'
+
+x-common: &common
+  extends:
+    file: base.yml
+    service: prod
+
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.1.0
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+
+  broker:
+    build:
+      context: ..
+      dockerfile: Dockerfile.kafka
+    image: broker
+    hostname: broker
+    container_name: broker
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://broker:9092,PLAINTEXT_HOST://localhost:29092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+      - KAFKA_SERVER_PORT
+      - NET_INPUT_TOPIC
+      - NET_OUPUT_TOPIC
+    command: sh ./start_kafka.sh
+
+  stream_reader:
+    <<: *common
+    depends_on:
+      - broker
+      - classification
+      - ch_consumer
+    volumes:
+      - /tmp/bd_itmo/:/bd_itmo/
+
+    command: python3 ./bigdata_itmo/stream_reader/run_producer.py
+
+  classification:
+    <<: *common
+    depends_on:
+      - broker
+    volumes:
+      - /tmp/bd_itmo/:/bd_itmo/
+    command: python3 ./bigdata_itmo/classification/run_network.py
+
+  ch_consumer:
+    <<: *common
+    depends_on:
+      - broker
+    volumes:
+      - /tmp/bd_itmo/:/bd_itmo/
+    command: python3 ./bigdata_itmo/clickhouse/run_consumer.py
+
+  clickhouse:
+    image: yandex/clickhouse-server
+    depends_on:
+      - ch_consumer
+    ports:
+    - 8123
+
+  grafana-storage:
+    image: busybox:latest
+    depends_on:
+      - clickhouse
+    volumes:
+      - /var/lib/grafana
+
+  grafana:
+    image: qxip/clickhouse-grafana
+    depends_on:
+      - clickhouse
+    ports:
+     - "3000:3000"
+    volumes_from:
+      - grafana-storage
+    environment:
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,vertamedia-clickhouse-datasource"
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"

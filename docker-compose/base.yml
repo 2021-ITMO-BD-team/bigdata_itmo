@@ -1,0 +1,27 @@
+version: '2.4'
+
+x-common: &common
+  build: &common-build
+    context: ..
+    args:
+      - VERSION
+  runtime: nvidia
+  ipc: host
+  environment:
+    - GOOGLE_API_KEY
+    - VERSION
+    - KAFKA_SERVER_ADDRESS
+    - KAFKA_SERVER_PORT
+    - NET_INPUT_TOPIC
+    - NET_OUPUT_TOPIC
+    - CLICKHOUSE_ADDRESS
+  restart: on-failure
+
+services:
+  prod:
+    <<: *common
+    build:
+      <<: *common-build
+      target: prod
+    image: bd_itmo:${VERSION}
+

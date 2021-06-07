@@ -1,0 +1,2 @@
+kafka-topics --create --topic {NET_INPUT_TOPIC} --bootstrap-server broker:{KAFKA_SERVER_PORT} --replication-factor 1 --partitions 1
+kafka-topics --create --topic {NET_OUPUT_TOPIC} --bootstrap-server broker:{KAFKA_SERVER_PORT} --replication-factor 1 --partitions 1
