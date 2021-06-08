@@ -18,10 +18,7 @@ services:
       - ZOOKEEPER_TICK_TIME=2000
 
   broker:
-    build:
-      context: ..
-      dockerfile: Dockerfile.kafka
-    image: broker
+    image: confluentinc/cp-kafka:6.1.0
     hostname: broker
     container_name: broker
     depends_on:
@@ -35,9 +32,6 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://broker:9092,PLAINTEXT_HOST://localhost:29092
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
       - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
-      - KAFKA_SERVER_PORT
-      - NET_INPUT_TOPIC
-      - NET_OUPUT_TOPIC
 
   stream_reader:
     <<: *common
@@ -51,6 +45,8 @@ services:
     entrypoint:
       bash -c "echo 'Giving Kafka a bit of time to start up…' &&
       sleep 30 &&
+      python3 ./bigdata_itmo/stream_reader/create_topics.py &&
+      sleep 10 &&
       python3 ./bigdata_itmo/stream_reader/run_producer.py"
 
   classification:
@@ -61,7 +57,7 @@ services:
       - /tmp/bd_itmo/:/bd_itmo/
     entrypoint:
       bash -c "echo 'Giving Kafka a bit of time to start up…' &&
-      sleep 30 &&
+      sleep 50 &&
       python3 ./bigdata_itmo/classification/run_network.py"
 
   ch_consumer:
@@ -72,18 +68,23 @@ services:
       - /tmp/bd_itmo/:/bd_itmo/
     entrypoint:
       bash -c "echo 'Giving Kafka a bit of time to start up…' &&
-      sleep 30 &&
+      sleep 50 &&
       python3 ./bigdata_itmo/clickhouse/run_consumer.py"
 
   clickhouse:
     image: yandex/clickhouse-server
+    hostname: clickhouse
+    container_name: clickhouse
     depends_on:
       - ch_consumer
     ports:
     - 8123
+    volumes:
+      - ../clickhouse_init/:/docker-entrypoint-initdb.d/
 
   grafana-storage:
     image: busybox:latest
+    container_name: grafana-storage
     depends_on:
       - clickhouse
     volumes:
@@ -91,6 +92,7 @@ services:
 
   grafana:
     image: qxip/clickhouse-grafana
+    container_name: grafana
     depends_on:
       - clickhouse
     ports:

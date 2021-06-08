@@ -1,3 +1,0 @@
-FROM confluentinc/cp-kafka:6.1.0
-
-COPY ./start_kafka.sh ./start_kafka.sh

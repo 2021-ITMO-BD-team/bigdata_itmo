@@ -25,17 +25,17 @@ class ClassificationConfig:
 
 class KafkaConfig:
 
-    server_address = os.getenv("KAFKA_SERVER_ADDRESS")
-    server_port = os.getenv("KAFKA_SERVER_PORT")
+    server_address = os.getenv("KAFKA_SERVER_ADDRESS", "broker")
+    server_port = os.getenv("KAFKA_SERVER_PORT", "9092")
     bootstrap_server = f"{server_address}:{server_port}"
 
-    net_input_topic = os.getenv("NET_INPUT_TOPIC")
-    net_output_topic = os.getenv("NET_OUTPUT_TOPIC")
+    net_input_topic = os.getenv("NET_INPUT_TOPIC", "net_input_topic")
+    net_output_topic = os.getenv("NET_OUTPUT_TOPIC", "net_output_topic")
 
 
 class ClickhouseConfig:
     address = os.getenv("CLICKHOUSE_ADDRESS")
-    table_name = "test"
+    table_name = "docker"
 
 
 download_config = DownloadConfig()

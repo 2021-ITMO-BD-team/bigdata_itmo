@@ -18,11 +18,13 @@ cp docker-compose/envs/example.env docker-compose/.env
 
 REPLACE `GOOGLE_API_KEY` with your own Google API key
 
-2. Run service
+2. Run services
 ```
 cd docker-compose
-DOCKER_BUILDKIT=1 docker-compose up --build
+DOCKER_BUILDKIT=1 docker-compose up --build --force-recreate
 ```
+
+Wait ~30 seconds for all services to run. If you see errors, stop services, run `docker-compose rm -svf` (issue sescribed [here](https://github.com/wurstmeister/kafka-docker/issues/389)) and up containers again.
 
 
 # Sorta development guide

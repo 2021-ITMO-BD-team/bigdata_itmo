@@ -12,14 +12,15 @@ def create_ch_client():
 
     columns_init = " ".join([f"{topic} Float32," for topic in classification_config.TOPICS])
 
-    client.execute("use trail")
-    client.execute(f"truncate table {clickhouse_config.table_name}")
+    client.execute("use docker")
     client.execute(
         f"create table IF NOT EXISTS {clickhouse_config.table_name}"
         + f"( {columns_init}"
-        + "time DateTime('Europe/Moscow'), )"
+        + "time DateTime('Europe/Moscow')"
+        + ")"
         + "ENGINE = MergeTree() ORDER BY time"
     )
+    return client
 
 
 def read_messages():
@@ -27,7 +28,7 @@ def read_messages():
     for message in consumer:
         message = message.value
         answer = json.dumps(message)
-        client.execute("INSERT INTO test format JSONEachRow {}".format(answer))
+        client.execute(f"INSERT INTO {clickhouse_config.table_name} format JSONEachRow {answer}")
 
 
 if __name__ == "__main__":

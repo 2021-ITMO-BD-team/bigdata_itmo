@@ -16,7 +16,7 @@ def softmax(x):
 
 
 def mock_prediction(message, topics=classification_config.TOPICS):
-    np.random.seed(int(message))
+    np.random.seed(int(message.value))
     logits = np.random.uniform(size=(len(topics),))
 
     prediction = {topic: proba for topic, proba in zip(topics, softmax(logits))}

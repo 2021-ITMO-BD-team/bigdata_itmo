@@ -1,5 +1,6 @@
 pafy==0.5.5
 scikit-learn==0.24.2
+confluent-kafka==1.7.0
 kafka-python==2.0.2
 numpy==1.19.5
 clickhouse-driver==0.2.1
