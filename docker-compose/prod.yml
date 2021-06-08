@@ -38,7 +38,6 @@ services:
       - KAFKA_SERVER_PORT
       - NET_INPUT_TOPIC
       - NET_OUPUT_TOPIC
-    command: sh ./start_kafka.sh
 
   stream_reader:
     <<: *common
@@ -49,7 +48,10 @@ services:
     volumes:
       - /tmp/bd_itmo/:/bd_itmo/
 
-    command: python3 ./bigdata_itmo/stream_reader/run_producer.py
+    entrypoint:
+      bash -c "echo 'Giving Kafka a bit of time to start up…' &&
+      sleep 30 &&
+      python3 ./bigdata_itmo/stream_reader/run_producer.py"
 
   classification:
     <<: *common
@@ -57,7 +59,10 @@ services:
       - broker
     volumes:
       - /tmp/bd_itmo/:/bd_itmo/
-    command: python3 ./bigdata_itmo/classification/run_network.py
+    entrypoint:
+      bash -c "echo 'Giving Kafka a bit of time to start up…' &&
+      sleep 30 &&
+      python3 ./bigdata_itmo/classification/run_network.py"
 
   ch_consumer:
     <<: *common
@@ -65,7 +70,10 @@ services:
       - broker
     volumes:
       - /tmp/bd_itmo/:/bd_itmo/
-    command: python3 ./bigdata_itmo/clickhouse/run_consumer.py
+    entrypoint:
+      bash -c "echo 'Giving Kafka a bit of time to start up…' &&
+      sleep 30 &&
+      python3 ./bigdata_itmo/clickhouse/run_consumer.py"
 
   clickhouse:
     image: yandex/clickhouse-server

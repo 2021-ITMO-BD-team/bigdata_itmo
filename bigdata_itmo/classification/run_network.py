@@ -42,7 +42,6 @@ if __name__ == "__main__":
     )
 
     producer = KafkaProducer(
-        kafka_config.net_output_topic,
         bootstrap_servers=kafka_config.bootstrap_server,
         value_serializer=lambda v: json.dumps(v).encode("utf-8"),
     )
