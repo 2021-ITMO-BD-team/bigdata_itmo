@@ -10,6 +10,7 @@ x-common: &common
   environment:
     - GOOGLE_API_KEY
     - VERSION
+    - STREAM_LINK
     - KAFKA_SERVER_ADDRESS
     - KAFKA_SERVER_PORT
     - NET_INPUT_TOPIC
