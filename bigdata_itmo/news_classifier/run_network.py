@@ -65,7 +65,7 @@ def predict_class():
 
 if __name__ == "__main__":
     
-    with_pipeline = False
+    with_pipeline = True
     
     parser = argparse.ArgumentParser(description='Audio Classification Model')
     parser.add_argument('--model_fn', type=str, default='models/conv1d.h5',
