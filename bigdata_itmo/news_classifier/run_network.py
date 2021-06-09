@@ -6,6 +6,7 @@ import numpy as np
 from kafka import KafkaConsumer
 from kafka.producer.kafka import KafkaProducer
 from predict import load_ml_model, make_prediction
+from mp3towav import convert
 from bigdata_itmo.config import classification_config, kafka_config
 
 
@@ -65,7 +66,7 @@ def predict_class():
 
 if __name__ == "__main__":
     
-    with_pipeline = False
+    with_pipeline = True
     
     parser = argparse.ArgumentParser(description='Audio Classification Model')
     parser.add_argument('--model_fn', type=str, default='models/conv1d.h5',
@@ -81,9 +82,11 @@ if __name__ == "__main__":
     parser.add_argument('--threshold', type=str, default=20,
                         help='threshold magnitude for np.int16 dtype')
     args, _ = parser.parse_known_args()
-
     model = load_ml_model(args.model_fn) # load model from .h5
+
     if not with_pipeline:
+        # print("Converting mp3 to wav... This may take a while ")
+        convert('./mp3')
         path = "./mp3_wav/0.wav"
         with open(path, "rb") as f:
             bytes_arr = f.read()

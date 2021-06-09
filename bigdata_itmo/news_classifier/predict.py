@@ -9,8 +9,8 @@ import argparse
 import os
 import pandas as pd
 from tqdm import tqdm
-CLASSES = {0:'coronavirus',
-           1:'disaster', 
+CLASSES = {0: 'coronavirus',
+           1: 'disaster', 
            2: 'elections', 
            3: 'other', 
            4: 'sports'}
@@ -69,7 +69,9 @@ def make_prediction(model, args, bytes_arr):
         y_pred_ind = np.argmax(y_mean)
         real_class = os.path.dirname(wav_fn).split('/')[-1]
         # print('Actual class: {}, Predicted class: {}'.format(real_class, classes[y_pred]))
-        ret_dict[CLASSES[y_pred_ind]] = 1
+        for i in range(y_mean.shape[0]):
+            ret_dict[CLASSES[i]] = y_mean[i]
+        # ret_dict[CLASSES[y_pred_ind]] = 1
         
         # results.append(y_mean) #{crime: 1, covid: 0, sports: 0, others:0}
     return ret_dict
