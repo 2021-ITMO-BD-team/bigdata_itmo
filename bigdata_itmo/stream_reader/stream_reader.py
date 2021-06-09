@@ -33,7 +33,7 @@ def send_file(producer, stream_link):
         print("Error while reading audiofile\n")
         exit(1)
     try:
-        producer.send("{}_{}".format(timestamp, stream_link), bytes)
+        producer.send(kafka_config.net_input_topic, bytes)
     except:  # noqa E722
         print("Error while sending file\n")
         exit(1)
