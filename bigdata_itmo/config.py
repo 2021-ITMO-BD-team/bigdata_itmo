@@ -19,7 +19,7 @@ class SystemConfig:
 class ClassificationConfig:
 
     ### Change topics according to your model categories
-    TOPICS = ["sports", "crime", "covid", "Business", "Political"]
+    TOPICS = ["coronavirus", "disaster", "elections", "sports", "other"]
     ###
 
 
