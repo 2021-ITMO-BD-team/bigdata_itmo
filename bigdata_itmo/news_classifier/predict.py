@@ -9,27 +9,45 @@ import argparse
 import os
 import pandas as pd
 from tqdm import tqdm
-
-
-def make_prediction(args):
-    print("Converting mp3 to wav... This may take a while ")
-    convert(args.src_dir)
-
-    print("Running prediction model...")
-    model = load_model(args.model_fn,
+CLASSES = {0:'coronavirus',
+           1:'disaster', 
+           2: 'elections', 
+           3: 'other', 
+           4: 'sports'}
+    
+def load_ml_model(model_fn):
+    print("Loading prediction model...")
+    model = load_model(model_fn,
         custom_objects={'STFT':STFT,
                         'Magnitude':Magnitude,
                         'ApplyFilterbank':ApplyFilterbank,
                         'MagnitudeToDecibel':MagnitudeToDecibel})
-    wav_paths = glob('{}/**'.format(args.src_dir+"_wav"), recursive=True)
-    wav_paths = sorted([x.replace(os.sep, '/') for x in wav_paths if '.wav' in x])
-    # classes = sorted(os.listdir(args.src_dir))
-    classes = ['coronavirus_wav', 'disaster_wav', 'elections_wav', 'other_wav', 'sports_wav']
-    labels = [os.path.split(x)[0].split('/')[-1] for x in wav_paths]
-    le = LabelEncoder()
-    y_true = le.fit_transform(labels)
-    results = []
+    return model
 
+def toWav(bytes_arr):
+    """
+    Return path of file
+    """
+    path = './temp.wav'
+    with open(path, mode='bx') as f:
+        f.write(bytes_arr)    
+    return path
+
+def make_prediction(model, args, bytes_arr):
+    # print("Converting mp3 to wav... This may take a while ")
+    # convert(args.src_dir)
+
+    # wav_paths = glob('{}/**'.format(args.src_dir), recursive=True)
+    # wav_paths = sorted([x.replace(os.sep, '/') for x in wav_paths if '.wav' in x])
+    # classes = sorted(os.listdir(args.src_dir))
+    # labels = [os.path.split(x)[0].split('/')[-1] for x in wav_paths]
+    # le = LabelEncoder()
+    # y_true = le.fit_transform(labels)
+
+    # Convert bytes into wav file
+    results = []
+    wav_paths = [toWav(bytes_arr)]  # only one file
+    ret_dict = {k:0 for k in CLASSES.values()}
     for z, wav_fn in tqdm(enumerate(wav_paths), total=len(wav_paths)):
         rate, wav = downsample_mono(wav_fn, args.sr)
         mask, env = envelope(wav, rate, threshold=args.threshold)
@@ -48,30 +66,32 @@ def make_prediction(args):
         X_batch = np.array(batch, dtype=np.float32)
         y_pred = model.predict(X_batch)
         y_mean = np.mean(y_pred, axis=0)
-        y_pred = np.argmax(y_mean)
+        y_pred_ind = np.argmax(y_mean)
         real_class = os.path.dirname(wav_fn).split('/')[-1]
-        print('Actual class: {}, Predicted class: {}'.format(real_class, classes[y_pred]))
-        results.append(y_mean)
+        # print('Actual class: {}, Predicted class: {}'.format(real_class, classes[y_pred]))
+        ret_dict[CLASSES[y_pred_ind]] = 1
+        
+        # results.append(y_mean) #{crime: 1, covid: 0, sports: 0, others:0}
+    return ret_dict
+    # np.save(os.path.join('logs', args.pred_fn), np.array(results))
 
-    np.save(os.path.join('logs', args.pred_fn), np.array(results))
 
+# if __name__ == '__main__':
 
-if __name__ == '__main__':
+    # parser = argparse.ArgumentParser(description='Audio Classification Training')
+    # parser.add_argument('--model_fn', type=str, default='models/lstm.h5',
+    #                     help='model file to make predictions')
+    # parser.add_argument('--pred_fn', type=str, default='y_pred',
+    #                     help='fn to write predictions in logs dir')
+    # parser.add_argument('--src_dir', type=str, default='wavfiles',
+    #                     help='directory containing wavfiles to predict')
+    # parser.add_argument('--dt', type=float, default=1.0,
+    #                     help='time in seconds to sample audio')
+    # parser.add_argument('--sr', type=int, default=16000,
+    #                     help='sample rate of clean audio')
+    # parser.add_argument('--threshold', type=str, default=20,
+    #                     help='threshold magnitude for np.int16 dtype')
+    # args, _ = parser.parse_known_args()
 
-    parser = argparse.ArgumentParser(description='Audio Classification Training')
-    parser.add_argument('--model_fn', type=str, default='models/lstm.h5',
-                        help='model file to make predictions')
-    parser.add_argument('--pred_fn', type=str, default='y_pred',
-                        help='fn to write predictions in logs dir')
-    parser.add_argument('--src_dir', type=str, default='wavfiles',
-                        help='directory containing wavfiles to predict')
-    parser.add_argument('--dt', type=float, default=1.0,
-                        help='time in seconds to sample audio')
-    parser.add_argument('--sr', type=int, default=16000,
-                        help='sample rate of clean audio')
-    parser.add_argument('--threshold', type=str, default=20,
-                        help='threshold magnitude for np.int16 dtype')
-    args, _ = parser.parse_known_args()
-
-    make_prediction(args)
+    # make_prediction(args)
 

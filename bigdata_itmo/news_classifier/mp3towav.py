@@ -7,7 +7,6 @@ import glob
 
 def src_dst(src):
     print("SOURCE is: {}".format(src))
-    # src  = "./garbage"
     if not os.path.isdir(os.path.join(src+"_wav")):
         os.mkdir(src+"_wav")
     else:

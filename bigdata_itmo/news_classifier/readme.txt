@@ -28,10 +28,10 @@ Sample rate and delta time should be the same from clean.py
 
 `python train.py`
 
-### Testing
+### HOW TO RUN
 
-move to same folder and type
+use this command:
+'python run_network.py'
 
-python predict.py --model models/conv1d.h5 --src_dir path/to/directory/mp3files
 
 NOTE: Please provide aviod relative path.
