@@ -1,0 +1,528 @@
+{
+  "__inputs": [],
+  "__requires": [
+    {
+      "id": "gauge",
+      "name": "Gauge",
+      "type": "panel",
+      "version": ""
+    },
+    {
+      "id": "grafana",
+      "name": "Grafana",
+      "type": "grafana",
+      "version": "8.0.0"
+    },
+    {
+      "id": "piechart",
+      "name": "Pie chart",
+      "type": "panel",
+      "version": ""
+    },
+    {
+      "id": "timeseries",
+      "name": "Time series",
+      "type": "panel",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "clickhouse",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "alert": {
+        "alertRuleTags": {},
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                0.9
+              ],
+              "type": "gt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": [
+                "A",
+                "1m",
+                "now"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "avg"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "5m",
+        "frequency": "1m",
+        "handler": 1,
+        "name": "COVID-19 news alert",
+        "noDataState": "no_data",
+        "notifications": []
+      },
+      "datasource": null,
+      "description": "Probability of news running in last x hours",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT t, 1 as coronavirus FROM\n(SELECT\n    time as t,\n    coronavirus\nFROM docker where coronavirus = greatest(sports, coronavirus, disaster, elections, other))\n",
+          "rawQuery": "SELECT t, 1 as coronavirus FROM\n(SELECT\n    time as t,\n    coronavirus\nFROM docker where coronavirus = greatest(sports, coronavirus, disaster, elections, other))",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        },
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT t, 1 as disaster FROM\n(SELECT\n    time as t,\n    disaster\nFROM docker where disaster = greatest(sports, coronavirus, disaster, elections, other))\n",
+          "rawQuery": "SELECT t, 1 as disaster FROM\n(SELECT\n    time as t,\n    disaster\nFROM docker where disaster = greatest(sports, coronavirus, disaster, elections, other))",
+          "refId": "B",
+          "round": "0s",
+          "skip_comments": true
+        },
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT t, 1 as sports FROM\n(SELECT\n    time as t,\n    sports\nFROM docker where sports = greatest(sports, coronavirus, disaster, elections, other))\n",
+          "rawQuery": "SELECT t, 1 as sports FROM\n(SELECT\n    time as t,\n    sports\nFROM docker where sports = greatest(sports, coronavirus, disaster, elections, other))",
+          "refId": "C",
+          "round": "0s",
+          "skip_comments": true
+        },
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT t, 1 as elections FROM\n(SELECT\n    time as t,\n    elections\nFROM docker where elections = greatest(sports, coronavirus, disaster, elections, other))\n",
+          "rawQuery": "SELECT t, 1 as elections FROM\n(SELECT\n    time as t,\n    elections\nFROM docker where elections = greatest(sports, coronavirus, disaster, elections, other))",
+          "refId": "D",
+          "round": "0s",
+          "skip_comments": true
+        },
+        {
+          "database": "docker",
+          "dateTimeType": "TIMESTAMP",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT t, 1 as other FROM\n(SELECT\n    time as t,\n    other\nFROM docker where other = greatest(sports, coronavirus, disaster, elections, other))\n",
+          "rawQuery": "SELECT t, 1 as other FROM\n(SELECT\n    time as t,\n    other\nFROM docker where other = greatest(sports, coronavirus, disaster, elections, other))",
+          "refId": "E",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "thresholds": [
+        {
+          "colorMode": "critical",
+          "op": "gt",
+          "value": 0.9,
+          "visible": true
+        }
+      ],
+      "title": "News topic running history",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 75
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 9,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": true
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "8.0.0",
+      "targets": [
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "select  time, \n       (case when sports = greatest(sports, coronavirus, disaster, elections, other) then 'sports'\n             when coronavirus = greatest(sports, coronavirus, disaster, elections, other) then 'coronavirus'\n             when disaster = greatest(sports, coronavirus, disaster, elections, other) then 'disaster'\n             when elections = greatest(sports, coronavirus, disaster, elections, other) then 'elections'\n             when other = greatest(sports, coronavirus, disaster, elections, other) then 'other'\n        end) as Runningtopic                \nfrom docker order by time DESC limit 1",
+          "rawQuery": "select  time, \n       (case when sports = greatest(sports, coronavirus, disaster, elections, other) then 'sports'\n             when coronavirus = greatest(sports, coronavirus, disaster, elections, other) then 'coronavirus'\n             when disaster = greatest(sports, coronavirus, disaster, elections, other) then 'disaster'\n             when elections = greatest(sports, coronavirus, disaster, elections, other) then 'elections'\n             when other = greatest(sports, coronavirus, disaster, elections, other) then 'other'\n        end) as Runningtopic                \nfrom docker order by time DESC limit 1",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "Running topic",
+      "transformations": [],
+      "type": "gauge"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.0.0",
+      "targets": [
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "select \ncount() , Runningtopic  from \n(select  time, \n       (case when sports = greatest(sports, coronavirus, disaster, elections, other) then 'sports'\n             when coronavirus = greatest(sports, coronavirus, disaster, elections, other) then 'coronavirus'\n             when disaster = greatest(sports, coronavirus, disaster, elections, other) then 'disaster'\n             when elections = greatest(sports, coronavirus, disaster, elections, other) then 'elections'\n             when other = greatest(sports, coronavirus, disaster, elections, other) then 'other'\n        end) as Runningtopic                \nfrom docker order by time DESC limit 360) group by Runningtopic",
+          "rawQuery": "select \ncount() , Runningtopic  from \n(select  time, \n       (case when sports = greatest(sports, coronavirus, disaster, elections, other) then 'sports'\n             when coronavirus = greatest(sports, coronavirus, disaster, elections, other) then 'coronavirus'\n             when disaster = greatest(sports, coronavirus, disaster, elections, other) then 'disaster'\n             when elections = greatest(sports, coronavirus, disaster, elections, other) then 'elections'\n             when other = greatest(sports, coronavirus, disaster, elections, other) then 'other'\n        end) as Runningtopic                \nfrom docker order by time DESC limit 360) group by Runningtopic",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "Percentage of  topics running last 6 hours",
+      "transformations": [],
+      "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "description": "Probability of news running in last x hours",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    time as t,\n    coronavirus\nFROM docker\n",
+          "rawQuery": "SELECT\n    time as t,\n    coronavirus\nFROM docker",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        },
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT\n    time as t,\n    disaster\nFROM docker\n",
+          "rawQuery": "SELECT\n    time as t,\n    disaster\nFROM docker",
+          "refId": "B",
+          "round": "0s",
+          "skip_comments": true
+        },
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT\n    time as t,\n    elections\nFROM docker\n",
+          "rawQuery": "SELECT\n    time as t,\n    elections\nFROM docker",
+          "refId": "C",
+          "round": "0s",
+          "skip_comments": true
+        },
+        {
+          "database": "docker",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT\n    time as t,\n    other\nFROM docker\n",
+          "rawQuery": "SELECT\n    time as t,\n    other\nFROM docker",
+          "refId": "D",
+          "round": "0s",
+          "skip_comments": true
+        },
+        {
+          "database": "docker",
+          "dateTimeType": "TIMESTAMP",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT\n    time as t,\n    sports\nFROM docker\n",
+          "rawQuery": "SELECT\n    time as t,\n    sports\nFROM docker",
+          "refId": "E",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "Probability of news classes",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "news test",
+  "uid": "xNuv9XeMk",
+  "version": 18
+}
