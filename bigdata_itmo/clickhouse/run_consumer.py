@@ -24,6 +24,9 @@ def create_ch_client():
         + ")"
         + "ENGINE = MergeTree() ORDER BY time"
     )
+    with open(LOG_FILE, "r") as fin:
+        for line in fin:
+            client.execute(f"INSERT INTO {clickhouse_config.table_name} format JSONEachRow {line}")
     return client
 
 
@@ -47,9 +50,9 @@ if __name__ == "__main__":
         value_deserializer=lambda x: json.loads(x.decode("utf-8")),
     )
 
-    client = create_ch_client()
     os.makedirs(osp.dirname(LOG_FILE), exist_ok=True)
     with open(LOG_FILE, "w"):
         pass
+    client = create_ch_client()
 
     read_messages()
