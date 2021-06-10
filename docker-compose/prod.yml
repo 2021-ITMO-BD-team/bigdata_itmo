@@ -40,25 +40,25 @@ services:
       - classification
       - ch_consumer
     volumes:
-      - /tmp/bd_itmo/:/bd_itmo/
+      - ../data/internal/:/data/internal/
 
     entrypoint:
       bash -c "echo 'Giving Kafka a bit of time to start up…' &&
       sleep 30 &&
       python3 ./bigdata_itmo/stream_reader/create_topics.py &&
       sleep 10 &&
-      python3 ./bigdata_itmo/stream_reader/run_producer.py"
+      python3 ./bigdata_itmo/stream_reader/stream_reader.py"
 
   classification:
     <<: *common
     depends_on:
       - broker
     volumes:
-      - /tmp/bd_itmo/:/bd_itmo/
+      - ../data/internal/:/data/internal/
     entrypoint:
       bash -c "echo 'Giving Kafka a bit of time to start up…' &&
       sleep 50 &&
-      python3 ./bigdata_itmo/classification/run_network.py"
+      python3 ./bigdata_itmo/news_classifier/run_network.py"
 
   ch_consumer:
     <<: *common
@@ -91,7 +91,7 @@ services:
       - /var/lib/grafana
 
   grafana:
-    image: qxip/clickhouse-grafana
+    image: grafana/grafana:latest
     container_name: grafana
     depends_on:
       - clickhouse
