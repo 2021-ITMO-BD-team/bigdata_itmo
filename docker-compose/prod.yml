@@ -78,7 +78,7 @@ services:
     depends_on:
       - ch_consumer
     ports:
-    - 8123
+    - 8123:8123
     volumes:
       - ../clickhouse_init/:/docker-entrypoint-initdb.d/
 
@@ -97,8 +97,6 @@ services:
       - clickhouse
     ports:
      - "3000:3000"
-    volumes_from:
-      - grafana-storage
     environment:
       GF_INSTALL_PLUGINS: "grafana-piechart-panel,vertamedia-clickhouse-datasource"
       GF_SECURITY_ADMIN_USER: "admin"

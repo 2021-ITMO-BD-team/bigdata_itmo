@@ -3,13 +3,11 @@ import datetime
 import json
 import os
 import os.path as osp
-import time
 
-import numpy as np
 from kafka import KafkaConsumer
 from kafka.producer.kafka import KafkaProducer
 
-from bigdata_itmo.config import classification_config, kafka_config, system_config
+from bigdata_itmo.config import kafka_config, system_config
 from bigdata_itmo.news_classifier.mp3towav import convert
 from bigdata_itmo.news_classifier.predict import load_ml_model, make_prediction
 
@@ -44,17 +42,21 @@ def test(bytes_arr):
 
 
 def predict_class():
-    for message in consumer:
-        ### Here goes prediction part
-        ### Replace mock prediction with real prediction
+    while True:
+        message_batch = consumer.poll()
 
-        # prediction = mock_prediction(message)
-        prediction_dict = actual_prediction(message.value)
-        prediction_dict["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        for topic_partition, partition_batch in message_batch.items():
+            for message in partition_batch:
+                ### Here goes prediction part
+                ### Replace mock prediction with real prediction
 
-        ### Sending to clickhouse
-        producer.send(kafka_config.net_output_topic, value=prediction_dict)
-        time.sleep(2)
+                # prediction = mock_prediction(message)
+                prediction_dict = actual_prediction(message.value)
+                prediction_dict["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                ### Sending to clickhouse
+                producer.send(kafka_config.net_output_topic, value=prediction_dict)
+                consumer.commit()
 
 
 if __name__ == "__main__":
@@ -65,7 +67,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_fn",
         type=str,
-        default=osp.join(system_config.model_dir, "classification", "conv1d.h5"),
+        default=osp.join(system_config.model_dir, "classification", "lstm.h5"),
         help="model file to make predictions",
     )
     # parser.add_argument('--pred_fn', type=str, default='y_pred',
